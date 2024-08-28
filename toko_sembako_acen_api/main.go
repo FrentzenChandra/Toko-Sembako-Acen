@@ -1,23 +1,35 @@
 package main
 
 import (
-	"log"
+	"time"
+	"toko_sembako_acen/config"
+	"toko_sembako_acen/infra/database"
+	"toko_sembako_acen/infra/logger"
+	"toko_sembako_acen/migrations"
+	"toko_sembako_acen/routers"
 
-	"github.com/gin-gonic/gin"
+	"github.com/spf13/viper"
 )
-
-var port = "192.168.18.5:9090"
 
 func main() {
 
-	r := gin.Default()
-	r.GET("/ping", func(ctx *gin.Context) {
-		ctx.JSON(200, gin.H{
-			"message": "Pong",
-		})
-	})
+	//set timezone
+	viper.SetDefault("SERVER_TIMEZONE", "Asia/Dhaka")
+	loc, _ := time.LoadLocation(viper.GetString("SERVER_TIMEZONE"))
+	time.Local = loc
 
-	log.Println("Running in Port : " + port)
-	r.Run(port)
+	if err := config.SetupConfig(); err != nil {
+		logger.Fatalf("config SetupConfig() error: %s", err)
+	}
+	masterDSN, replicaDSN := config.DbConfiguration()
+
+	if err := database.DbConnection(masterDSN, replicaDSN); err != nil {
+		logger.Fatalf("database DbConnection error: %s", err)
+	}
+	//later separate migration
+	migrations.Migrate()
+
+	router := routers.SetupRoute()
+	logger.Fatalf("%v", router.Run(config.ServerConfig()))
 
 }
