@@ -26,3 +26,9 @@ func SetupRoute() *gin.Engine {
 
 	return router
 }
+
+func SetupRouteLocalhost() *gin.Engine {
+	router := gin.New()
+	LocalHostRoute(router)
+	return router
+}

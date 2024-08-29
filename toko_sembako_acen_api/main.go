@@ -12,7 +12,6 @@ import (
 )
 
 func main() {
-
 	//set timezone
 	viper.SetDefault("SERVER_TIMEZONE", "Asia/Dhaka")
 	loc, _ := time.LoadLocation(viper.GetString("SERVER_TIMEZONE"))
@@ -29,7 +28,17 @@ func main() {
 	//later separate migration
 	migrations.Migrate()
 
+	// // Gorilla Session (only used for localhost)
+	// helpers.GothicSessionInit()
+
+	// // Initialize Google OAuth2 (Only Use For localhost)
+	// helpers.GothGoogle()
+
 	router := routers.SetupRoute()
 	logger.Fatalf("%v", router.Run(config.ServerConfig()))
+
+	// localhost Routing
+	// routerLocalhost := routers.SetupRouteLocalhost()
+	// logger.Fatalf("%v", routerLocalhost.Run(config.ServerConfigLocalHost()))
 
 }

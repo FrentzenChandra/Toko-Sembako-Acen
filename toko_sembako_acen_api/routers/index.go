@@ -27,7 +27,17 @@ func RegisterRoutes(route *gin.Engine) {
 }
 
 func UserRoutes(route *gin.Engine) {
-
 	UserControllers := controllers.NewUserController(DB)
+
+	route.GET("/users/google/signin", UserControllers.GoogleSignIn)
+	route.GET("/auth/:provider", UserControllers.SignInWithProvider)
+	route.GET("/auth/:provider/callback", UserControllers.CallbackHandler)
+
+}
+
+func LocalHostRoute(route *gin.Engine) {
+	UserControllers := controllers.NewUserController(DB)
+
 	route.POST("/users/signup", UserControllers.SignUp)
+	route.POST("/users/signin", UserControllers.SignIn)
 }

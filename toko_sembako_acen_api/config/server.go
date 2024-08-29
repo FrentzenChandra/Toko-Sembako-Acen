@@ -2,8 +2,9 @@ package config
 
 import (
 	"fmt"
-	"github.com/spf13/viper"
 	"log"
+
+	"github.com/spf13/viper"
 )
 
 type ServerConfiguration struct {
@@ -13,10 +14,16 @@ type ServerConfiguration struct {
 }
 
 func ServerConfig() string {
-	viper.SetDefault("SERVER_HOST", "192.168.18.5")
+	viper.SetDefault("SERVER_HOST", "0.0.0.0")
 	viper.SetDefault("SERVER_PORT", "9090")
 
 	appServer := fmt.Sprintf("%s:%s", viper.GetString("SERVER_HOST"), viper.GetString("SERVER_PORT"))
+	log.Print("Server Running at :", appServer)
+	return appServer
+}
+
+func ServerConfigLocalHost() string {
+	appServer := fmt.Sprintf("%s:%s", "localhost", "5050")
 	log.Print("Server Running at :", appServer)
 	return appServer
 }

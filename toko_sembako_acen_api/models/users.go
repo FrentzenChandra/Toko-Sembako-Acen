@@ -21,3 +21,10 @@ type Users struct {
 func (e *Users) TableName() string {
 	return "users"
 }
+
+type OAuthUser struct {
+	OAuthId       string `json:"oauthId"`
+	Name          string `json:"name"`
+	Email         string `json:"email"`
+	VerifiedEmail bool   `json:"verified_email"`
+}
