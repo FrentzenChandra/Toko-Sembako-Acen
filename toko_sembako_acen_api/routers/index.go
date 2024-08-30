@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"toko_sembako_acen/controllers"
 	"toko_sembako_acen/infra/database"
+	"toko_sembako_acen/routers/middlewares"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -29,15 +30,17 @@ func RegisterRoutes(route *gin.Engine) {
 func UserRoutes(route *gin.Engine) {
 	UserControllers := controllers.NewUserController(DB)
 
-	route.GET("/users/google/signin", UserControllers.GoogleSignIn)
-	route.GET("/auth/:provider", UserControllers.SignInWithProvider)
-	route.GET("/auth/:provider/callback", UserControllers.CallbackHandler)
+	route.POST("/users/signup", UserControllers.SignUp)
+	route.POST("/users/signin", UserControllers.Login)
 
+	route.Use(middlewares.JwtMiddleware)
+	route.GET("/users", UserControllers.UserList)
 }
 
 func LocalHostRoute(route *gin.Engine) {
 	UserControllers := controllers.NewUserController(DB)
 
-	route.POST("/users/signup", UserControllers.SignUp)
-	route.POST("/users/signin", UserControllers.SignIn)
+	route.GET("/users/google/signin", UserControllers.GoogleSignIn)
+	route.GET("/auth/:provider", UserControllers.SignInWithProvider)
+	route.GET("/auth/:provider/callback", UserControllers.CallbackHandler)
 }

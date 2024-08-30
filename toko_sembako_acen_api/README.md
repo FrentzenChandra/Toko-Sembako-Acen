@@ -93,12 +93,9 @@ Follow these steps:
 - Check Application health available on [0.0.0.0:8000/health](http://0.0.0.0:8000/health)
 
 ### Middlewares
-- Use Gin CORSMiddleware
+- Use Jwt
 ```go
-router := gin.New()
-router.Use(gin.Logger())
-router.Use(gin.Recovery())
-router.Use(middleware.CORSMiddleware())
+
 ```
 
 ### Boilerplate Structure

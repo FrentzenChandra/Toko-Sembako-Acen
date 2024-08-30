@@ -2,9 +2,9 @@ package controllers
 
 import (
 	"context"
+	"log"
 	"net/http"
 	"toko_sembako_acen/helpers"
-	"toko_sembako_acen/infra/logger"
 	"toko_sembako_acen/models"
 
 	"github.com/gin-gonic/gin"
@@ -24,18 +24,18 @@ func (u *UserController) SignUp(ctx *gin.Context) {
 	var user models.Users
 
 	if err := ctx.ShouldBindBodyWithJSON(&user); err != nil {
-		logger.Infof(err.Error(), user)
+		log.Println(err.Error(), user)
 		ctx.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
 
 	if user.Email == "" {
-		logger.Infof("Email Cannot be Empty")
+		log.Println("Email Cannot be Empty")
 		return
 	}
 
 	if user.Password == "" {
-		logger.Infof("Password Cannot be Empty")
+		log.Println("Password Cannot be Empty")
 		return
 	}
 
@@ -50,7 +50,7 @@ func (u *UserController) SignUp(ctx *gin.Context) {
 		Email:    user.Email,
 		Password: hashedPass,
 	}).Error; err != nil {
-		logger.Infof(err.Error(), user)
+		log.Println(err.Error(), user)
 		ctx.JSON(500, gin.H{"error": "Failed to create user"})
 		return
 	}
@@ -58,29 +58,30 @@ func (u *UserController) SignUp(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, "Successfully Created user ")
 }
 
-func (u *UserController) SignIn(ctx *gin.Context) {
+func (u *UserController) Login(ctx *gin.Context) {
+
 	var user models.Users
 
 	if err := ctx.ShouldBindBodyWithJSON(&user); err != nil {
-		logger.Infof(err.Error(), user)
+		log.Println(err.Error(), user)
 		ctx.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
 
 	if user.Email == "" {
-		logger.Infof("Email Cannot be Empty")
+		log.Println("Email Cannot be Empty")
 		return
 	}
 
 	if user.Password == "" {
-		logger.Infof("Password Cannot be Empty")
+		log.Println("Password Cannot be Empty")
 		return
 	}
 
 	inputPassword := user.Password
 
 	if err := u.db.Where("email = ? AND deleted_at IS NULL", user.Email).First(&user).Error; err != nil {
-		logger.Infof(err.Error())
+		log.Println(err.Error())
 		ctx.JSON(401, gin.H{"error": "Invalid Email or Password"})
 		return
 	}
@@ -88,13 +89,33 @@ func (u *UserController) SignIn(ctx *gin.Context) {
 	isPasswordCorrect := helpers.VerifyPassword(user.Password, inputPassword)
 
 	if !isPasswordCorrect {
-		logger.Infof("3333333333333")
 		ctx.JSON(401, gin.H{"error": "Invalid Email or Password"})
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, user)
+	tokenString, err := helpers.CreateToken(user.Id, user.Username, user.Email)
+
+	if err != nil {
+		ctx.JSON(400, err)
+		return
+	}
+
+	ctx.JSON(200, tokenString)
 }
+
+func (u *UserController) UserList(c *gin.Context) {
+
+	var users []*models.Users
+
+	if err := u.db.Where("deleted_at IS NULl").Find(&users).Error; err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(200, users)
+}
+
+
 
 func (u *UserController) GoogleSignIn(c *gin.Context) {
 	c.Redirect(301, "/auth/google")
