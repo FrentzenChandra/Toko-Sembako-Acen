@@ -24,8 +24,8 @@ type ProductCategory struct {
 	ProductID  uuid.UUID  `json:"product_id" gorm:"type:uuid;not null;"`
 	CategoryID uuid.UUID  `json:"category_id" gorm:"type:uuid;not null;"`
 	CreatedAt  *time.Time `json:"created_at,omitempty"`
-	Product    *Product   `json:"product,omitempty" gorm:"foreignKey:ProductID;"`
-	Category   *Category  `json:"category,omitempty" gorm:"foreignKey:CategoryID;"`
+	Product    *Product   `json:"product,omitempty" gorm:"foreignKey:ProductID;constraint:OnDelete:CASCADE;"`
+	Category   *Category  `json:"category,omitempty" gorm:"foreignKey:CategoryID;constraint:OnDelete:CASCADE;"`
 }
 
 func (p *ProductCategory) TableName() string {

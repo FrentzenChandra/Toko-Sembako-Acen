@@ -4,8 +4,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 )
 
 type Users struct {
@@ -16,15 +14,9 @@ type Users struct {
 	CreatedAt *time.Time `json:"created_at,omitempty"`
 	UpdatedAt *time.Time `json:"updated_at,omitempty" gorm:"type:timestamp; default:NULL"`
 	DeletedAt *time.Time `json:"deleted_at,omitempty" gorm:"type:timestamp; default:NULL"`
-	Cart      Cart       `json:"cart,omitempty" gorm:"constraint:OnDelete:CASCADE;references:Id"`
 }
 
 // TableName is Database TableName of this model
 func (u *Users) TableName() string {
 	return "users"
-}
-
-func (u *Users) AfterDelete(tx *gorm.DB) (err error) {
-	tx.Clauses(clause.Returning{}).Where("user_id = ?", u.Id).Delete(&Cart{})
-	return
 }

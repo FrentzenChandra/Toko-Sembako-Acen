@@ -4,8 +4,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 )
 
 type Cart struct {
@@ -15,8 +13,12 @@ type Cart struct {
 	CreatedAt  *time.Time `json:"created_at,omitempty"`
 	UpdatedAt  *time.Time `json:"updated_at,omitempty"`
 	DeletedAt  *time.Time `json:"deleted_at,omitempty"`
-	User       *Users     `json:"user,omitempty" gorm:"foreignKey:UserID;"`
-	CartItems  []CartItem `json:"cart_items,omitempty" gorm:"many2many:cart_item;constraint:OnDelete:CASCADE;""`
+	User       *Users     `json:"user,omitempty" gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE;"`
+	CartItems  []CartItem `json:"cart_items,omitempty" gorm:"many2many:cart_item;"`
+}
+
+func (c *Cart) TableName() string {
+	return "cart"
 }
 
 type CartItem struct {
@@ -26,19 +28,10 @@ type CartItem struct {
 	Qty       int        `json:"qty" gorm:"type:int4;not null;default:1"`
 	SubTotal  float64    `json:"subtotal" `
 	CreatedAt *time.Time `json:"created_at,omitempty"`
-	Product   Product    `json:"product,omitempty" gorm:"foreignKey:ProductID;"`
-	Cart      Cart       `json:"cart,omitempty" gorm:"foreignKey:CartID;"`
-}
-
-func (c *Cart) TableName() string {
-	return "cart"
+	Product   *Product    `json:"product,omitempty" gorm:"foreignKey:ProductID;constraint:OnDelete:CASCADE;"`
+	Cart      *Cart       `json:"cart,omitempty" gorm:"foreignKey:CartID;constraint:OnDelete:CASCADE;"`
 }
 
 func (c *CartItem) TableName() string {
 	return "cart_item"
-}
-
-func (u *Cart) AfterDelete(tx *gorm.DB) (err error) {
-	tx.Clauses(clause.Returning{}).Where("cart_id = ?", u.Id).Delete(&CartItem{})
-	return
 }
