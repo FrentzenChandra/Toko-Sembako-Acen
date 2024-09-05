@@ -44,3 +44,9 @@ func LocalHostRoute(route *gin.Engine) {
 	route.GET("/auth/:provider", UserControllers.SignInWithProvider)
 	route.GET("/auth/:provider/callback", UserControllers.CallbackHandler)
 }
+
+func ProductRoutes(route *gin.Engine) {
+	ProductsControllers := controllers.NewProductController(DB)
+
+	route.Use(middlewares.JwtMiddleware)
+}
