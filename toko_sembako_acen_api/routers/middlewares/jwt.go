@@ -11,7 +11,6 @@ import (
 func JwtMiddleware(ctx *gin.Context) {
 	ctx.Writer.Header().Set("Content-Type", "application/json")
 	tokenString := ctx.GetHeader("Authorization")
-	
 
 	if tokenString == "" {
 		ctx.JSON(http.StatusUnauthorized, "You are not Authorized to access this")

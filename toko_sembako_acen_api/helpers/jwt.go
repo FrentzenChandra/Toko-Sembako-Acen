@@ -2,13 +2,16 @@ package helpers
 
 import (
 	"errors"
+	"log"
 	"strings"
+	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
+	"github.com/spf13/viper"
 )
 
-var secretKey = []byte("tokosembakoapijwtsecret12345")
+var secretKey = []byte(viper.GetString("JWT_SECRET"))
 
 func CreateToken(userId uuid.UUID, username string, email string) (string, error) {
 
@@ -19,16 +22,25 @@ func CreateToken(userId uuid.UUID, username string, email string) (string, error
 			"userId":   userId,
 			"username": username,
 			"email":    email,
-		})
+			"exp":      time.Now().Add(time.Hour * 4).Unix(),
+		},
+	)
 
 	// di enkripsi dan juga diconvert menjadi string
-	signedToken, err := token.SignedString(secretKey)
+	TokenString, err := token.SignedString(secretKey)
+
+	log.Println(token.Claims.GetExpirationTime())
 
 	if err != nil {
 		return "", err
 	}
 
-	return signedToken, nil
+	if err != nil {
+		log.Println("Error Token Claims Expired Time : " + err.Error())
+		return "", err
+	}
+
+	return TokenString, nil
 }
 
 func VerifyToken(tokenString string) error {

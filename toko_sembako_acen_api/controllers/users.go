@@ -93,7 +93,9 @@ func (u *UserController) Login(ctx *gin.Context) {
 		return
 	}
 
+
 	tokenString, err := helpers.CreateToken(user.Id, user.Username, user.Email)
+
 
 	if err != nil {
 		ctx.JSON(400, err)
@@ -114,8 +116,6 @@ func (u *UserController) UserList(c *gin.Context) {
 
 	c.JSON(200, users)
 }
-
-
 
 func (u *UserController) GoogleSignIn(c *gin.Context) {
 	c.Redirect(301, "/auth/google")

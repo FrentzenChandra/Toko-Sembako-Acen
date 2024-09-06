@@ -3,9 +3,9 @@ package controllers
 import (
 	"log"
 	"strconv"
-	"time"
+	"toko_sembako_acen/helpers"
+	"toko_sembako_acen/models"
 
-	"github.com/cloudinary/cloudinary-go/v2"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
@@ -18,9 +18,16 @@ func NewProductController(db *gorm.DB) *ProductController {
 	return &ProductController{db: db}
 }
 
-func (p *ProductController) AddProduct(cloud *cloudinary.Cloudinary, c *gin.Context) {
+func (p *ProductController) AddProduct(c *gin.Context) {
 
 	name := c.PostForm("name")
+
+	if name == "" {
+		log.Println("Name Cannot Be Empty")
+		c.JSON(422, "Server Error : Data Stock Is not Integer")
+		return
+	}
+
 	stock, err := strconv.Atoi(c.PostForm("stock"))
 
 	if err != nil {
@@ -45,8 +52,7 @@ func (p *ProductController) AddProduct(cloud *cloudinary.Cloudinary, c *gin.Cont
 		return
 	}
 
-	nowTime := time.Now()
-	pictureFileHeader, err := c.FormFile("picture")
+	pictureFile, err := c.FormFile("picture")
 
 	if err != nil {
 		log.Println("Error Post Picture : " + err.Error())
@@ -54,12 +60,27 @@ func (p *ProductController) AddProduct(cloud *cloudinary.Cloudinary, c *gin.Cont
 		return
 	}
 
-	if name == "" {
-		log.Println("Name Cannot Be Empty")
-		c.JSON(422, "Server Error : Data Stock Is not Integer")
+	picUrl, err := helpers.UploadToCloudinary(pictureFile)
+
+	if err != nil {
+		log.Println(err)
+		c.JSON(500, "Server Error : Failed to upload picture")
 		return
 	}
 
-	
+	log.Println(picUrl)
 
+	if err := p.db.Create(&models.Product{
+		Name:    name,
+		Stock:   stock,
+		Price:   price,
+		Capital: capital,
+		Picture: picUrl,
+	}).Error; err != nil {
+		log.Println("Error Create Product : " + err.Error())
+		c.JSON(400, "Error Server ")
+		return
+	}
+
+	c.JSON(201, "Product Created Successfully!!!")
 }

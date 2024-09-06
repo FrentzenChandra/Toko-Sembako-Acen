@@ -56,6 +56,7 @@ require (
 require (
 	github.com/bytedance/sonic v1.12.2 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20230717121745-296ad89f973d // indirect
+	github.com/cloudinary/cloudinary-go v1.7.0
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.5 // indirect
 	github.com/gin-contrib/sessions v1.0.1

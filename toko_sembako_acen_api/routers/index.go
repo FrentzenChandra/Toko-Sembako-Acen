@@ -47,6 +47,14 @@ func LocalHostRoute(route *gin.Engine) {
 
 func ProductRoutes(route *gin.Engine) {
 	ProductsControllers := controllers.NewProductController(DB)
-
 	route.Use(middlewares.JwtMiddleware)
+
+	route.POST("/product", ProductsControllers.AddProduct)
+}
+
+func CategoryRoutes(route *gin.Engine) {
+	CategoryControllers := controllers.NewCategoryController(DB)
+	route.Use(middlewares.JwtMiddleware)
+
+	route.POST("/category", CategoryControllers.AddCategory)
 }

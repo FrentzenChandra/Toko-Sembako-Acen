@@ -21,8 +21,11 @@ func SetupRoute() *gin.Engine {
 	router.Use(gin.Recovery())
 	// router.Use(middleware.CORSMiddleware())
 
-	RegisterRoutes(router) //routes register
+	// initialize Routes
+	RegisterRoutes(router)
 	UserRoutes(router)
+	CategoryRoutes(router)
+	ProductRoutes(router)
 
 	return router
 }

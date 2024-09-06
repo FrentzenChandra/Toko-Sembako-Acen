@@ -4,30 +4,42 @@ import (
 	"context"
 	"log"
 	"mime/multipart"
-	"os"
 
-	"github.com/cloudinary/cloudinary-go/api/uploader"
 	"github.com/cloudinary/cloudinary-go/v2"
+	"github.com/cloudinary/cloudinary-go/v2/api"
+	"github.com/cloudinary/cloudinary-go/v2/api/uploader"
+	"github.com/spf13/viper"
 )
 
 func UploadToCloudinary(file *multipart.FileHeader) (string, error) {
-	// Remove from local
-	defer func() {
-		os.Remove("assets/uploads/" + file.Filename)
-	}()
 
-	cloudinary_url := "cloudinary://<api_key>:<api_secret>@<cloud_name>"
-	cld, err := cloudinary.NewFromURL(cloudinary_url)
+	// Credentials
+	cld, err := cloudinary.NewFromParams(viper.GetString("CLOUDINARY_CLOUD_NAME"), viper.GetString("CLOUDINARY_API_KEY"), viper.GetString("CLOUDINARY_API_SECRET"))
+
+	if err != nil {
+		log.Println("Error Uploading Image : " + err.Error())
+		return "", err
+	}
+
+	cloudianryPathFolder := viper.GetString("CLOUDINARY_UPLOAD_FOLDER")
 
 	// Upload the image on the cloud
 	var ctx = context.Background()
-	resp, err := cld.Upload.Upload(ctx, "assets/uploads/"+file.Filename, uploader.UploadParams{PublicID: "my_avatar" + "-" + file.Filename + "-" + GenerateUid()})
+	uploadResponse, err := cld.Upload.Upload(
+		ctx,
+		file,
+		uploader.UploadParams{
+			PublicID:       "Products",
+			Folder:         cloudianryPathFolder,
+			UniqueFilename: api.Bool(true),
+		},
+	)
 
 	if err != nil {
-		log.Fatal(err)
+		log.Println("Error Uploading Image : " + err.Error())
 		return "", err
 	}
 
 	// Return the image url
-	return resp.SecureURL, nil
+	return uploadResponse.SecureURL, nil
 }
