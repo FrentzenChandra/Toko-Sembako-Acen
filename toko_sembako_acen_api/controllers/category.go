@@ -49,4 +49,3 @@ func (c *CategoryController) AddCategory(ctx *gin.Context) {
 
 	ctx.JSON(201, "Category Successfully Created")
 }
-

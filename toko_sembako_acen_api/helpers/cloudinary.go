@@ -29,9 +29,9 @@ func UploadToCloudinary(file *multipart.FileHeader) (string, error) {
 		ctx,
 		file,
 		uploader.UploadParams{
-			PublicID:       "Products",
 			Folder:         cloudianryPathFolder,
 			UniqueFilename: api.Bool(true),
+			Overwrite:      api.Bool(false),
 		},
 	)
 

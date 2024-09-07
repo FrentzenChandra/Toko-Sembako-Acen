@@ -12,7 +12,7 @@ type Product struct {
 	Stock      int        `json:"stock" gorm:"type:int4";not null;default:0`
 	Price      float64    `json:"price" gorm:"type:float8";not null;`
 	Capital    float64    `json:"capital" gorm:"type:float8;not null"`
-	Picture    string     `json:"picture" gorm:"type:text;not null"`
+	Picture    string     `json:"picture" gorm:"type:text;"`
 	CreatedAt  *time.Time `json:"created_at,omitempty"`
 	UpdatedAt  *time.Time `json:"updated_at,omitempty"`
 	DeletedAt  *time.Time `json:"deleted_at,omitempty"`
