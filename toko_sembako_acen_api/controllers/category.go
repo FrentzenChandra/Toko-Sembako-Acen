@@ -1,51 +1,36 @@
 package controllers
 
 import (
-	"log"
 	"toko_sembako_acen/models"
+	"toko_sembako_acen/services"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
 
 type CategoryController struct {
-	db *gorm.DB
+	categoryService *services.CategoryService
 }
 
-func NewCategoryController(db *gorm.DB) *CategoryController {
-	return &CategoryController{db: db}
+func NewCategoryController(categoryService *services.CategoryService) *CategoryController {
+	return &CategoryController{categoryService: categoryService}
 }
 
-func (c *CategoryController) AddCategory(ctx *gin.Context) {
+func (c *CategoryController) Create(ctx *gin.Context) {
+
 	var category *models.Category
 
-	err := ctx.BindJSON(&category)
+	if err := ctx.ShouldBindBodyWithJSON(&category); err != nil {
+		ctx.JSON(400, gin.H{"status": 400, "message": err.Error(), "data": nil})
+		return
+	}
+
+	category, err := c.categoryService.AddCategory(category)
 
 	if err != nil {
-		log.Println("Error When Bind Json Body Category Controller : " + err.Error())
-		ctx.JSON(400, "Server Error")
+		ctx.JSON(400, gin.H{"status": 400, "message": err.Error(), "data": nil})
 		return
 	}
 
-	if category.Name == "" {
-		log.Println("Error Name Cannot Empty")
-		ctx.JSON(422, "Server Error : Name Cannot Be Empty")
-		return
-	}
+	ctx.JSON(201, gin.H{"status": 201, "message": "Category created successfully", "data": category})
 
-	if RowsAffected := c.db.Where(&models.Category{
-		Name: category.Name,
-	}).Take(&models.Category{}).RowsAffected; RowsAffected != 0 {
-		log.Println("Error Name Already Exists")
-		ctx.JSON(409, "Category Already Exists")
-		return
-	}
-
-	if err := c.db.Create(category).Error; err != nil {
-		log.Println("Error When Create Category : " + err.Error())
-		ctx.JSON(500, "Server Error")
-		return
-	}
-
-	ctx.JSON(201, "Category Successfully Created")
 }

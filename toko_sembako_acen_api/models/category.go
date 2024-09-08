@@ -13,6 +13,7 @@ type Category struct {
 	UpdatedAt *time.Time `json:"updated_at,omitempty"`
 }
 
+
 func (c *Category) TableName() string {
 	return "category"
 }

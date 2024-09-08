@@ -5,6 +5,7 @@ import (
 	"toko_sembako_acen/controllers"
 	"toko_sembako_acen/infra/database"
 	"toko_sembako_acen/routers/middlewares"
+	"toko_sembako_acen/services"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -28,33 +29,36 @@ func RegisterRoutes(route *gin.Engine) {
 }
 
 func UserRoutes(route *gin.Engine) {
-	UserControllers := controllers.NewUserController(DB)
+	userService := services.NewUserService(DB)
+	userControllers := controllers.NewUserController(userService)
 
-	route.POST("/users/signup", UserControllers.SignUp)
-	route.POST("/users/signin", UserControllers.Login)
+	route.POST("/users/signup", userControllers.Register)
+	route.POST("/users/signin", userControllers.Login)
 
 	route.Use(middlewares.JwtMiddleware)
-	route.GET("/users", UserControllers.UserList)
-}
-
-func LocalHostRoute(route *gin.Engine) {
-	UserControllers := controllers.NewUserController(DB)
-
-	route.GET("/users/google/signin", UserControllers.GoogleSignIn)
-	route.GET("/auth/:provider", UserControllers.SignInWithProvider)
-	route.GET("/auth/:provider/callback", UserControllers.CallbackHandler)
+	// route.GET("/users", userControllers.)
 }
 
 func ProductRoutes(route *gin.Engine) {
-	ProductsControllers := controllers.NewProductController(DB)
+	productService := services.NewProductService(DB)
+	ProductsControllers := controllers.NewProductController(productService)
 	route.Use(middlewares.JwtMiddleware)
 
 	route.POST("/product", ProductsControllers.AddProduct)
 }
 
 func CategoryRoutes(route *gin.Engine) {
-	CategoryControllers := controllers.NewCategoryController(DB)
+	categoryService := services.NewCategoryService(DB)
+	categoryControllers := controllers.NewCategoryController(categoryService)
 	route.Use(middlewares.JwtMiddleware)
 
-	route.POST("/category", CategoryControllers.AddCategory)
+	route.POST("/category", categoryControllers.Create)
 }
+
+//func LocalHostRoute(route *gin.Engine) {
+// 	userControllers := controllers.NewUserController(DB)
+
+// 	route.GET("/users/google/signin", userControllers.GoogleSignIn)
+// 	route.GET("/auth/:provider", userControllers.SignInWithProvider)
+// 	route.GET("/auth/:provider/callback", userControllers.CallbackHandler)
+// }
