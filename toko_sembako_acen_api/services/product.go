@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 	"mime/multipart"
+	"time"
 	"toko_sembako_acen/helpers"
 	"toko_sembako_acen/models"
 
@@ -93,14 +94,40 @@ func (p *ProductService) GetProducts() ([]*models.Product, error) {
 
 func (p *ProductService) DeleteProduct(productId uuid.UUID) error {
 
-	if err := p.db.Delete(&models.Product{
-		Id: productId,
-	}).Error; err != nil {
+	if err := p.db.Model(&models.Product{}).Where("id = ?", productId).Update("deleted_at", time.Now()).Error; err != nil {
 		log.Println("Repository error When deleting Product : ", err.Error())
 		return err
 	}
-	
 
 	return nil
+
+}
+
+func (p *ProductService) GetProductsByCategoryAndSearch(category []string, search string) ([]*models.Product, error) {
+	var Searchquery, categoryQuery string
+	var users []*models.Product
+
+	Searchquery = "name ILIKE %" + search + "%"
+
+	if len(category) > 0 {
+		for index, _ := range category {
+
+			if index == 0 {
+				categoryQuery += "id = ? "
+			} else {
+				categoryQuery += " OR id = ? "
+			}
+		}
+	}
+
+	// Preload Orders with conditions
+	if len(category) > 0 {
+		if err := p.db.Preload("Categories", categoryQuery, category).Where(Searchquery).Find(&users).Error; err != nil {
+			log.Println("Error Repository When Find Products By Category And Search : " + err.Error())
+			return nil, err
+		}
+	}
+
+	return users, nil
 
 }

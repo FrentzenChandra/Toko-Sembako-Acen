@@ -15,7 +15,7 @@ type Product struct {
 	Picture    string     `json:"picture" gorm:"type:text;"`
 	CreatedAt  *time.Time `json:"created_at,omitempty"`
 	UpdatedAt  *time.Time `json:"updated_at,omitempty"`
-	DeletedAt  *time.Time `json:"deleted_at,omitempty"`
+	DeletedAt  time.Time `json:"deleted_at,omitempty"`
 	Categories []Category `json:"categories,omitempty" gorm:"many2many:product_category;"`
 }
 

@@ -12,7 +12,7 @@ type Cart struct {
 	UserID     uuid.UUID  `json:"user_id" gorm:"type:uuid;not null;"`
 	CreatedAt  *time.Time `json:"created_at,omitempty"`
 	UpdatedAt  *time.Time `json:"updated_at,omitempty"`
-	DeletedAt  *time.Time `json:"deleted_at,omitempty"`
+	DeletedAt  time.Time `json:"deleted_at,omitempty"`
 	User       *Users     `json:"user,omitempty" gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE;"`
 	CartItems  []CartItem `json:"cart_items,omitempty" gorm:"many2many:cart_item;"`
 }

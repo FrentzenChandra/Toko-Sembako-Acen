@@ -44,10 +44,18 @@ func UploadToCloudinary(file *multipart.FileHeader) (string, error) {
 	return uploadResponse.SecureURL, nil
 }
 
-func DeleteAssetCloudinary() error {
+func DeleteAssetCloudinary(publicId string) error {
+
+	cloudianryPathFolder := viper.GetString("CLOUDINARY_UPLOAD_FOLDER")
+	
 	cld, err := cloudinary.NewFromParams(viper.GetString("CLOUDINARY_CLOUD_NAME"), viper.GetString("CLOUDINARY_API_KEY"), viper.GetString("CLOUDINARY_API_SECRET"))
 
-	resp, err := cld.Upload.Destroy(context.Background(), uploader.DestroyParams{PublicID: "pcxmtubwsr4qygse115i.jpg"})
+	if err != nil {
+		log.Println("Error Uploading Image : " + err.Error())
+		return err
+	}
+
+	resp, err := cld.Upload.Destroy(context.Background(), uploader.DestroyParams{PublicID: cloudianryPathFolder + "/hrzrd6gwiyydobcrvdjq"})
 
 	log.Println(resp)
 

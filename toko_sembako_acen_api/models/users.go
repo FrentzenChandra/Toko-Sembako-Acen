@@ -13,7 +13,7 @@ type Users struct {
 	Username  string     `json:"username" gorm:"type:varchar(255);default:'steve'"`
 	CreatedAt *time.Time `json:"created_at,omitempty"`
 	UpdatedAt *time.Time `json:"updated_at,omitempty" gorm:"type:timestamp; default:NULL"`
-	DeletedAt *time.Time `json:"deleted_at,omitempty" gorm:"type:timestamp; default:NULL"`
+	DeletedAt time.Time `json:"deleted_at,omitempty" gorm:"type:timestamp; default:NULL"`
 }
 
 // TableName is Database TableName of this model

@@ -123,3 +123,19 @@ func (p *ProductController) DeleteProduct(c *gin.Context) {
 	c.JSON(200, gin.H{"status": 200, "message": "Products Deleted Successfully", "data": productId})
 
 }
+
+func (p *ProductController) GetProductsByCategoryAndSearch(c *gin.Context) {
+	search := c.Query("search")
+	categoryString := c.Query("category")
+
+	category := strings.Split(categoryString, ",")
+
+	products, err := p.productService.GetProductsByCategoryAndSearch(category, search)
+
+	if err != nil {
+		c.JSON(400, gin.H{"status": 400, "message": err.Error(), "data": nil})
+		return
+	}
+
+	c.JSON(200, gin.H{"status": 200, "message": "Products Retrieved Successfully", "data": products})
+}

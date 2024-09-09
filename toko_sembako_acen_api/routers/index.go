@@ -46,7 +46,8 @@ func ProductRoutes(route *gin.Engine) {
 
 	route.POST("/product", ProductsControllers.AddProduct)
 
-	route.GET("/product", ProductsControllers.GetProducts)
+	// route.GET("/product", ProductsControllers.GetProducts)
+	route.GET("/product", ProductsControllers.GetProductsByCategoryAndSearch)
 
 	route.DELETE("/product/:id", ProductsControllers.DeleteProduct)
 }
