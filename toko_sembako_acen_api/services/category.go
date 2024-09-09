@@ -35,3 +35,8 @@ func (c *CategoryService) AddCategory(category *models.Category) (*models.Catego
 
 	return category, nil
 }
+
+
+// func (c *CategoryService) GetCategories() (*[]models.Category, error) {
+
+// }

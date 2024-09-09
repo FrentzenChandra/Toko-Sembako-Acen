@@ -31,16 +31,15 @@ func (u *UserService) SignUp(user *models.Users) (*uuid.UUID, error) {
 	// }
 
 	hashedPass := helpers.HashPassword(user.Password)
+	user.Password = hashedPass
+	email := user.Email
 
-	if err := u.db.Where("email = ? AND deleted_at IS NULL", user.Email).First(&models.Users{}).Error; err != gorm.ErrRecordNotFound {
+	if err := u.db.Where("email = ? AND deleted_at IS NULL", email).First(&models.Users{}).Error; err != gorm.ErrRecordNotFound {
 		log.Println("Service Error Get User Detail : " + err.Error())
 		return nil, err
 	}
 
-	if err := u.db.Create(&models.Users{
-		Email:    user.Email,
-		Password: hashedPass,
-	}).Error; err != nil {
+	if err := u.db.Create(&user).Error; err != nil {
 		log.Println("Service Error Creating User : " + err.Error())
 		return nil, err
 	}
@@ -49,7 +48,7 @@ func (u *UserService) SignUp(user *models.Users) (*uuid.UUID, error) {
 }
 
 func (u *UserService) Login(user *models.Users) (*string, error) {
-	
+
 	inputPassword := user.Password
 
 	if err := u.db.Where("email = ? AND deleted_at IS NULL", user.Email).First(&user).Error; err != nil {
@@ -72,17 +71,16 @@ func (u *UserService) Login(user *models.Users) (*string, error) {
 	return &tokenString, nil
 }
 
-// func (u *UserService) UserList(c *gin.Context) {
+func (u *UserService) UserList() (*[]models.Users, error) {
+	var users []models.Users
 
-// 	var users []*models.Users
+	if err := u.db.Where("deleted_at IS NULL").Find(&users).Error; err != nil {
+		log.Println("Service Error Get users : " + err.Error())
+		return nil, err
+	}
 
-// 	if err := u.db.Where("deleted_at IS NULL").Find(&users).Error; err != nil {
-// 		log.Println("Service Error Get users : " + err.Error())
-// 		return
-// 	}
-
-// 	c.JSON(200, users)
-// }
+	return &users, nil
+}
 
 // func (u *UserService) GoogleSignIn(c *gin.Context) {
 // 	c.Redirect(301, "/auth/google")

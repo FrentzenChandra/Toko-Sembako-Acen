@@ -36,7 +36,7 @@ func UserRoutes(route *gin.Engine) {
 	route.POST("/users/signin", userControllers.Login)
 
 	route.Use(middlewares.JwtMiddleware)
-	// route.GET("/users", userControllers.)
+	route.GET("/users", userControllers.GetUsers)
 }
 
 func ProductRoutes(route *gin.Engine) {
@@ -45,6 +45,10 @@ func ProductRoutes(route *gin.Engine) {
 	route.Use(middlewares.JwtMiddleware)
 
 	route.POST("/product", ProductsControllers.AddProduct)
+
+	route.GET("/product", ProductsControllers.GetProducts)
+
+	route.DELETE("/product/:id", ProductsControllers.DeleteProduct)
 }
 
 func CategoryRoutes(route *gin.Engine) {

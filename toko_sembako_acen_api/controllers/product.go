@@ -9,6 +9,7 @@ import (
 	"toko_sembako_acen/services"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 type ProductController struct {
@@ -23,17 +24,16 @@ func (p *ProductController) AddProduct(c *gin.Context) {
 	var name, categoryString string
 	var stock int
 	var price, capital float64
-	var product *models.Product
 
 	categoryString = c.PostForm("category")
 
 	category := strings.Split(categoryString, ",")
 
-	if len(category) == 0 {
-		log.Println("Category Can't be empty")
-		c.JSON(400, gin.H{"status": 402, "message": "Category Cannot be Empty", "data": nil})
-		return
-	}
+	// if len(category) == 0 {
+	// 	log.Println("Category Can't be empty")
+	// 	c.JSON(400, gin.H{"status": 402, "message": "Category Cannot be Empty", "data": nil})
+	// 	return
+	// }
 
 	name = c.PostForm("name")
 
@@ -84,12 +84,12 @@ func (p *ProductController) AddProduct(c *gin.Context) {
 		return
 	}
 
-	product.Name = name
-	product.Stock = stock
-	product.Price = price
-	product.Capital = capital
-
-	product, err = p.productService.AddProduct(product, category, pictureFile)
+	product, err := p.productService.AddProduct(&models.Product{
+		Name:    name,
+		Stock:   stock,
+		Capital: capital,
+		Price:   price,
+	}, category, pictureFile)
 
 	if err != nil {
 		c.JSON(400, gin.H{"status": 400, "message": err.Error(), "data": nil})
@@ -97,4 +97,29 @@ func (p *ProductController) AddProduct(c *gin.Context) {
 	}
 
 	c.JSON(200, gin.H{"status": 200, "message": "Product Created Successfully", "data": product})
+}
+
+func (p *ProductController) GetProducts(c *gin.Context) {
+
+	products, err := p.productService.GetProducts()
+
+	if err != nil {
+		c.JSON(400, gin.H{"status": 400, "message": err.Error(), "data": nil})
+		return
+	}
+
+	c.JSON(200, gin.H{"status": 200, "message": "Products Retrieved Successfully", "data": products})
+}
+
+func (p *ProductController) DeleteProduct(c *gin.Context) {
+
+	productId := c.Param("id")
+
+	if err := p.productService.DeleteProduct(uuid.MustParse(productId)); err != nil {
+		c.JSON(400, gin.H{"status": 400, "message": err.Error(), "data": nil})
+		return
+	}
+
+	c.JSON(200, gin.H{"status": 200, "message": "Products Deleted Successfully", "data": productId})
+
 }

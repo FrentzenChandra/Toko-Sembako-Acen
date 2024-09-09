@@ -1,8 +1,10 @@
 package main
 
 import (
+	"log"
 	"time"
 	"toko_sembako_acen/config"
+	"toko_sembako_acen/helpers"
 	"toko_sembako_acen/infra/database"
 	"toko_sembako_acen/infra/logger"
 	"toko_sembako_acen/migrations"
@@ -27,6 +29,12 @@ func main() {
 	}
 	//later separate migration
 	migrations.Migrate()
+
+	err := helpers.DeleteAssetCloudinary()
+
+	if err != nil {
+		log.Println(err)
+	}
 
 	// // Gorilla Session (only used for localhost)
 	// helpers.GothicSessionInit()

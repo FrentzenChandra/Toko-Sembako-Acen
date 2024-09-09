@@ -26,13 +26,13 @@ func (u *UserController) Login(ctx *gin.Context) {
 
 	if user.Email == "" {
 		log.Println("Email Cannot be Empty")
-		ctx.JSON(400, gin.H{"status": 400, "message": "Email Cannot be Empty", "data": nil})
+		ctx.JSON(401, gin.H{"status": 401, "message": "Email Cannot be Empty", "data": nil})
 		return
 	}
 
 	if user.Password == "" {
 		log.Println("Password Cannot be Empty")
-		ctx.JSON(400, gin.H{"status": 400, "message": "Password Cannot be Empty", "data": nil})
+		ctx.JSON(401, gin.H{"status": 401, "message": "Password Cannot be Empty", "data": nil})
 		return
 	}
 
@@ -56,7 +56,7 @@ func (u *UserController) Register(ctx *gin.Context) {
 
 	if user.Email == "" {
 		log.Println("Email Cannot be Empty")
-		ctx.JSON(400, gin.H{"status": 400, "message": "Email Cannot be Empty", "data": nil})
+		ctx.JSON(401, gin.H{"status": 401, "message": "Email Cannot be Empty", "data": nil})
 		return
 	}
 
@@ -69,9 +69,22 @@ func (u *UserController) Register(ctx *gin.Context) {
 	userId, err := u.userService.SignUp(&user)
 
 	if err != nil {
-		ctx.JSON(401, gin.H{"status": 400, "message": err.Error(), "data": nil})
+		ctx.JSON(401, gin.H{"status": 401, "message": err.Error(), "data": nil})
 		return
 	}
 
-	ctx.JSON(200, gin.H{"status": 201, "message": "Account Successfully Registered", "data": userId})
+	ctx.JSON(201, gin.H{"status": 201, "message": "Account Successfully Registered", "data": userId})
+}
+
+func (u *UserController) GetUsers(ctx *gin.Context) {
+
+	users, err := u.userService.UserList()
+
+	if err != nil {
+		ctx.JSON(400, gin.H{"status": 400, "message": err.Error(), "data": nil})
+		return
+	}
+
+	ctx.JSON(200, gin.H{"status": 200, "message": "Users retrieved successfully", "data": users})
+
 }
