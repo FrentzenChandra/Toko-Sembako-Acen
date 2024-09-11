@@ -69,10 +69,10 @@ func DeleteAssetCloudinary(pictureUrl string) error {
 		err = errors.New("Delete Failed File : " + resultResp)
 	}
 
-	if err != nil {
-		log.Println("ErrorDelete Image : " + err.Error())
-		return errors.New("Cloudinary Error Delete : " + resultResp)
-	}
+	// if err != nil {
+	// 	log.Println("ErrorDelete Image : " + err.Error())
+	// 	return errors.New("Cloudinary Error Delete : " + resultResp)
+	// }
 
 	return nil
 

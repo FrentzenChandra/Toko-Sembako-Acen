@@ -101,8 +101,24 @@ func (p *ProductController) AddProduct(c *gin.Context) {
 }
 
 func (p *ProductController) GetProducts(c *gin.Context) {
+	page := c.Query("page")
+	limit := c.Query("limit")
+	var pageInt, limitInt int
 
-	products, err := p.productService.GetProducts()
+	if page == "" || limit == "" {
+		pageInt = 1
+		limitInt = 10
+	}
+
+	if pageInt, err := strconv.Atoi(page); err != nil || pageInt <= 0 {
+		pageInt = 1
+	}
+
+	if limitInt, err := strconv.Atoi(limit); err != nil || limitInt <= 0 {
+		limitInt = 10
+	}
+
+	products, err := p.productService.GetProducts(pageInt, limitInt)
 
 	if err != nil {
 		c.JSON(400, gin.H{"status": 400, "message": err.Error(), "data": nil})
@@ -126,12 +142,32 @@ func (p *ProductController) DeleteProduct(c *gin.Context) {
 }
 
 func (p *ProductController) GetProductsByCategoryAndSearch(c *gin.Context) {
+	page := c.Query("page")
+	limit := c.Query("limit")
+	var pageInt, limitInt int
+
+	if page == "" || limit == "" {
+		pageInt = 1
+		limitInt = 10
+	}
+	pageInt, err := strconv.Atoi(page)
+
+	if err != nil || pageInt <= 0 {
+		pageInt = 1
+	}
+
+	limitInt, err = strconv.Atoi(limit)
+
+	if err != nil || limitInt <= 0 {
+		limitInt = 10
+	}
+
 	search := c.Query("search")
 	categoryString := c.Query("category")
 
 	category := strings.Split(categoryString, ",")
 
-	products, err := p.productService.GetProductsByCategoryAndSearch(category, search)
+	products, err := p.productService.GetProductsByCategoryAndSearch(category, search, pageInt, limitInt)
 
 	if err != nil {
 		c.JSON(400, gin.H{"status": 400, "message": err.Error(), "data": nil})
@@ -214,11 +250,11 @@ func (p *ProductController) UpdateProduct(c *gin.Context) {
 	}
 
 	product, err := p.productService.UpdateProduct(&models.Product{
-		Id:      uuid.MustParse(productId),
-		Name:    name,
-		Stock:   stock,
-		Capital: capital,
-		Price:   price,
+		Id:        uuid.MustParse(productId),
+		Name:      name,
+		Stock:     stock,
+		Capital:   capital,
+		Price:     price,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 		DeletedAt: nil,

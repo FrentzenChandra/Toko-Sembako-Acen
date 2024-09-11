@@ -80,10 +80,10 @@ func (p *ProductService) AddProductCategory(category []string, productId uuid.UU
 	return nil
 }
 
-func (p *ProductService) GetProducts() ([]*models.Product, error) {
+func (p *ProductService) GetProducts(page int, limit int) ([]*models.Product, error) {
 	var products []*models.Product
 
-	if err := p.db.Where("deleted_at IS NULL").Preload("Categories").Find(&products).Error; err != nil {
+	if err := p.db.Where("deleted_at IS NULL").Preload("Categories").Offset((page - 1) * limit).Limit(limit).Find(&products).Error; err != nil {
 		log.Println("Error Service When Find Products : " + err.Error())
 		return nil, err
 	}
@@ -103,11 +103,10 @@ func (p *ProductService) DeleteProduct(productId uuid.UUID) error {
 
 }
 
-func (p *ProductService) GetProductsByCategoryAndSearch(category []string, search string) ([]*models.Product, error) {
+func (p *ProductService) GetProductsByCategoryAndSearch(category []string, search string, page int, limit int) ([]*models.Product, error) {
 	var categoryQuery string
 	var products []*models.Product
 	search = "%" + search + "%"
-	log.Println(len(category))
 
 	if len(category) > 0 && category[0] != "" {
 		for index, _ := range category {
@@ -139,7 +138,7 @@ func (p *ProductService) GetProductsByCategoryAndSearch(category []string, searc
 			productIds = append(productIds, product.Id.String())
 		}
 
-		if err := p.db.Preload("Categories").Where("id IN ?", productIds).Find(&products).Error; err != nil {
+		if err := p.db.Preload("Categories").Where("id IN ?", productIds).Offset((page - 1) * limit).Limit(limit).Find(&products).Error; err != nil {
 			log.Println("Error Service When Find Products By Category And Search : " + err.Error())
 			return nil, err
 		}
@@ -149,7 +148,9 @@ func (p *ProductService) GetProductsByCategoryAndSearch(category []string, searc
 		}
 
 	} else {
-		if err := p.db.Preload("Categories").Where("name ILIKE ? AND deleted_at IS NULL", search).Find(&products).Error; err != nil {
+		log.Println(limit)
+		log.Println(page)
+		if err := p.db.Preload("Categories").Limit(limit).Offset((page-1)*limit).Where("name ILIKE ? AND deleted_at IS NULL", search).Find(&products).Error; err != nil {
 			log.Println("Error Service When Find Products By Category And Search : " + err.Error())
 			return nil, err
 		}
@@ -161,6 +162,9 @@ func (p *ProductService) GetProductsByCategoryAndSearch(category []string, searc
 
 func (p *ProductService) UpdateProduct(product *models.Product, categories []string, pictureFile *multipart.FileHeader) (*models.Product, error) {
 	var productBeforeUpdt *models.Product
+	var errChan = make(chan error)
+	var picUrlChan = make(chan string)
+
 	rowsAffected := p.db.Preload("Categories").Where("id = ? AND deleted_at is NULL", product.Id).First(&productBeforeUpdt).RowsAffected
 
 	if rowsAffected == 0 {
@@ -187,25 +191,34 @@ func (p *ProductService) UpdateProduct(product *models.Product, categories []str
 		return nil, err
 	}
 
-	go func() error{
+	go func() {
 		err := helpers.DeleteAssetCloudinary(productBeforeUpdt.Picture)
 
 		if err != nil {
 			log.Println("Error Service When Delete Asset From Cloudinary : ", err)
 			tx.Rollback()
-			return err
+			errChan <- err
+			return
 		}
 
-		return nil
+		picUrl, err := helpers.UploadToCloudinary(pictureFile)
+
+		if err != nil {
+			log.Println("Service Error When Upload Picture To cloudinary : " + err.Error())
+			tx.Rollback()
+			errChan <- err
+			return
+		}
+
+		errChan <- nil
+		picUrlChan <- picUrl
 	}()
 
-	picUrl, err := helpers.UploadToCloudinary(pictureFile)
-
-	if err != nil {
-		log.Println("Service Error When Upload Picture To cloudinary : " + err.Error())
-		tx.Rollback()
+	if err := <-errChan; err != nil {
 		return nil, err
 	}
+
+	picUrl := <-picUrlChan
 
 	if err := tx.Model(&product).Where("id = ?", product.Id).Update("picture", picUrl).Error; err != nil {
 		log.Println("Error Repository When Update Product : " + err.Error())
