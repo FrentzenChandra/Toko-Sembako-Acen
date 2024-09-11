@@ -5,6 +5,7 @@ import (
 	"log"
 	"strconv"
 	"strings"
+	"time"
 	"toko_sembako_acen/models"
 	"toko_sembako_acen/services"
 
@@ -138,4 +139,95 @@ func (p *ProductController) GetProductsByCategoryAndSearch(c *gin.Context) {
 	}
 
 	c.JSON(200, gin.H{"status": 200, "message": "Products Retrieved Successfully", "data": products})
+}
+
+func (p *ProductController) UpdateProduct(c *gin.Context) {
+	var name, categoryString string
+	var stock int
+	var price, capital float64
+
+	productId := c.Param("id")
+
+	if productId == "" {
+		log.Println("Invalid Url parameter")
+		c.JSON(400, gin.H{"status": 402, "message": "Invalid URL parameter", "data": nil})
+		return
+	}
+
+	categoryString = c.PostForm("category")
+
+	category := strings.Split(categoryString, ",")
+
+	if len(category) == 0 {
+		log.Println("Category Can't be empty")
+		c.JSON(400, gin.H{"status": 402, "message": "Category Cannot be Empty", "data": nil})
+		return
+	}
+
+	name = c.PostForm("name")
+
+	if name == "" {
+		log.Println("Name Cannot Be Empty")
+		c.JSON(400, gin.H{"status": 402, "message": "Name Cannot be Empty", "data": nil})
+		return
+	}
+
+	stock, err := strconv.Atoi(c.PostForm("stock"))
+
+	if err != nil {
+		if stock <= 0 {
+			err = errors.New("Stock input Is Invalid")
+		}
+		log.Println("Error When Convert Stock Text to integer")
+		c.JSON(400, gin.H{"status": 402, "message": err.Error(), "data": nil})
+		return
+	}
+
+	price, err = strconv.ParseFloat(c.PostForm("price"), 64)
+
+	if err != nil {
+		if price <= 0 {
+			err = errors.New("Price input Is Invalid")
+		}
+		log.Println("Error When Convert Price Text to float : " + err.Error())
+		c.JSON(400, gin.H{"status": 402, "message": err.Error(), "data": nil})
+		return
+	}
+
+	capital, err = strconv.ParseFloat(c.PostForm("capital"), 64)
+
+	if err != nil {
+		if capital <= 0 {
+			err = errors.New("Capital input Is Invalid")
+		}
+		log.Println("Error When Convert Capital Text to float : " + err.Error())
+		c.JSON(400, gin.H{"status": 402, "message": err.Error(), "data": nil})
+		return
+	}
+
+	pictureFile, err := c.FormFile("picture")
+
+	if err != nil {
+		log.Println("Error Post Picture : " + err.Error())
+		c.JSON(400, gin.H{"status": 402, "message": err.Error(), "data": nil})
+		return
+	}
+
+	product, err := p.productService.UpdateProduct(&models.Product{
+		Id:      uuid.MustParse(productId),
+		Name:    name,
+		Stock:   stock,
+		Capital: capital,
+		Price:   price,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		DeletedAt: nil,
+	}, category, pictureFile)
+
+	if err != nil {
+		c.JSON(400, gin.H{"status": 400, "message": err.Error(), "data": nil})
+		return
+	}
+
+	c.JSON(200, gin.H{"status": 200, "message": "Product Created Successfully", "data": product})
 }

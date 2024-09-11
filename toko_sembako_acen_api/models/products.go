@@ -13,9 +13,9 @@ type Product struct {
 	Price      float64    `json:"price" gorm:"type:float8";not null;`
 	Capital    float64    `json:"capital" gorm:"type:float8;not null"`
 	Picture    string     `json:"picture" gorm:"type:text;"`
-	CreatedAt  *time.Time `json:"created_at,omitempty"`
-	UpdatedAt  *time.Time `json:"updated_at,omitempty"`
-	DeletedAt  time.Time `json:"deleted_at,omitempty"`
+	CreatedAt  time.Time  `json:"created_at,omitempty"`
+	UpdatedAt  time.Time  `json:"updated_at,omitempty" gorm:"type:timestamp; default:NULL"`
+	DeletedAt  *time.Time  `json:"deleted_at,omitempty" gorm:"type:timestamp; default:NULL"`
 	Categories []Category `json:"categories,omitempty" gorm:"many2many:product_category;"`
 }
 

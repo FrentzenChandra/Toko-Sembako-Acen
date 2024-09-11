@@ -2,8 +2,10 @@ package helpers
 
 import (
 	"context"
+	"errors"
 	"log"
 	"mime/multipart"
+	"strings"
 
 	"github.com/cloudinary/cloudinary-go/v2"
 	"github.com/cloudinary/cloudinary-go/v2/api"
@@ -44,10 +46,14 @@ func UploadToCloudinary(file *multipart.FileHeader) (string, error) {
 	return uploadResponse.SecureURL, nil
 }
 
-func DeleteAssetCloudinary(publicId string) error {
+func DeleteAssetCloudinary(pictureUrl string) error {
+
+	hasil := strings.Split(pictureUrl, "/")
+	hasil = strings.Split(hasil[9], ".")
 
 	cloudianryPathFolder := viper.GetString("CLOUDINARY_UPLOAD_FOLDER")
-	
+	fileUrl := cloudianryPathFolder + "/" + hasil[0]
+
 	cld, err := cloudinary.NewFromParams(viper.GetString("CLOUDINARY_CLOUD_NAME"), viper.GetString("CLOUDINARY_API_KEY"), viper.GetString("CLOUDINARY_API_SECRET"))
 
 	if err != nil {
@@ -55,13 +61,17 @@ func DeleteAssetCloudinary(publicId string) error {
 		return err
 	}
 
-	resp, err := cld.Upload.Destroy(context.Background(), uploader.DestroyParams{PublicID: cloudianryPathFolder + "/hrzrd6gwiyydobcrvdjq"})
+	resp, err := cld.Upload.Destroy(context.Background(), uploader.DestroyParams{PublicID: fileUrl})
 
-	log.Println(resp)
+	resultResp := resp.Result
+
+	if resultResp != "ok" {
+		err = errors.New("Delete Failed File : " + resultResp)
+	}
 
 	if err != nil {
-		log.Println("Error Uploading Image : " + err.Error())
-		return err
+		log.Println("ErrorDelete Image : " + err.Error())
+		return errors.New("Cloudinary Error Delete : " + resultResp)
 	}
 
 	return nil

@@ -50,6 +50,8 @@ func ProductRoutes(route *gin.Engine) {
 	route.GET("/product", ProductsControllers.GetProductsByCategoryAndSearch)
 
 	route.DELETE("/product/:id", ProductsControllers.DeleteProduct)
+
+	route.PATCH("/product/:id", ProductsControllers.UpdateProduct)
 }
 
 func CategoryRoutes(route *gin.Engine) {
