@@ -104,12 +104,12 @@ func (p *ProductService) DeleteProduct(productId uuid.UUID) error {
 }
 
 func (p *ProductService) GetProductsByCategoryAndSearch(category []string, search string) ([]*models.Product, error) {
-	var Searchquery, categoryQuery string
-	var users []*models.Product
+	var categoryQuery string
+	var products []*models.Product
+	search = "%" + search + "%"
+	log.Println(len(category))
 
-	Searchquery = "name ILIKE %" + search + "%"
-
-	if len(category) > 0 {
+	if len(category) > 0 && category[0] != "" {
 		for index, _ := range category {
 
 			if index == 0 {
@@ -121,13 +121,36 @@ func (p *ProductService) GetProductsByCategoryAndSearch(category []string, searc
 	}
 
 	// Preload Orders with conditions
-	if len(category) > 0 {
-		if err := p.db.Preload("Categories", categoryQuery, category).Where(Searchquery).Find(&users).Error; err != nil {
+	if len(category) > 0 && category[0] != "" {
+		var productIds []string
+		err := p.db.Model(&models.Product{}).
+			Preload("Categories").
+			Select("Distinct product.id ").
+			Joins("inner join product_category on product.id = product_category.product_id").
+			Where(" product.name ILIKE ? and product_category.category_id in ? ", search, category).
+			Scan(&products).Error
+
+		if err != nil {
+			log.Println(err)
+			return nil, err
+		}
+
+		for _, product := range products {
+			productIds = append(productIds, product.Id.String())
+		}
+
+		if err := p.db.Preload("Categories").Where("id IN ?", productIds).Find(&products).Error; err != nil {
+			log.Println("Error Repository When Find Products By Category And Search : " + err.Error())
+			return nil, err
+		}
+
+	} else {
+		if err := p.db.Preload("Categories").Where("name ILIKE ?", search).Find(&products).Error; err != nil {
 			log.Println("Error Repository When Find Products By Category And Search : " + err.Error())
 			return nil, err
 		}
 	}
 
-	return users, nil
+	return products, nil
 
 }
