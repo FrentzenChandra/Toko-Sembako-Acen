@@ -62,6 +62,15 @@ func CategoryRoutes(route *gin.Engine) {
 	route.POST("/category", categoryControllers.Create)
 }
 
+func CartRoutes(route *gin.Engine) {
+	cartItemService := services.NewCartItemService(DB)
+	cartItemController := controllers.NewCartController(cartItemService)
+
+	route.Use(middlewares.JwtMiddleware)
+
+	route.POST("/cart", cartItemController.AddCartItem)
+}
+
 //func LocalHostRoute(route *gin.Engine) {
 // 	userControllers := controllers.NewUserController(DB)
 
