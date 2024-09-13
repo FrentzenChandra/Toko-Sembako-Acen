@@ -7,7 +7,7 @@ import (
 )
 
 type CartItemInput struct {
-	ProductID uuid.UUID `json:"product_id"`
+	ProductID *uuid.UUID `json:"product_id"`
 	Price     float64   `json:"price" `
 	Qty       int       `json:"qty" `
 }

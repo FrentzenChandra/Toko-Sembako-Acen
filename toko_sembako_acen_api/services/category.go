@@ -36,7 +36,12 @@ func (c *CategoryService) AddCategory(category *models.Category) (*models.Catego
 	return category, nil
 }
 
+func (c *CategoryService) GetCategories() ([]*models.Category, error) {
+	var categories []*models.Category
+	if err := c.db.Find(&categories).Error; err != nil {
+		log.Println("Error Category Service :  " + err.Error())
+		return nil, err
+	}
 
-// func (c *CategoryService) GetCategories() (*[]models.Category, error) {
-
-// }
+	return categories, nil
+}

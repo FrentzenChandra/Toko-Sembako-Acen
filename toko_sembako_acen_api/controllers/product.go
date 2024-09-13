@@ -97,7 +97,7 @@ func (p *ProductController) AddProduct(c *gin.Context) {
 		return
 	}
 
-	c.JSON(200, gin.H{"status": 200, "message": "Product Created Successfully", "data": product})
+	c.JSON(201, gin.H{"status": 201, "message": "Product Created Successfully", "data": product})
 }
 
 func (p *ProductController) GetProducts(c *gin.Context) {
@@ -249,14 +249,17 @@ func (p *ProductController) UpdateProduct(c *gin.Context) {
 		return
 	}
 
+	TimeNow := time.Now()
+
 	product, err := p.productService.UpdateProduct(&models.Product{
 		Id:        uuid.MustParse(productId),
 		Name:      name,
 		Stock:     stock,
 		Capital:   capital,
 		Price:     price,
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
+		CreatedAt: TimeNow,
+		UpdatedAt: &TimeNow,
+
 		DeletedAt: nil,
 	}, category, pictureFile)
 

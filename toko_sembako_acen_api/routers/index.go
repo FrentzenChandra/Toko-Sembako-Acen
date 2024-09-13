@@ -60,6 +60,8 @@ func CategoryRoutes(route *gin.Engine) {
 	route.Use(middlewares.JwtMiddleware)
 
 	route.POST("/category", categoryControllers.Create)
+
+	route.GET("/category", categoryControllers.GetCategories)
 }
 
 func CartRoutes(route *gin.Engine) {
@@ -69,6 +71,10 @@ func CartRoutes(route *gin.Engine) {
 	route.Use(middlewares.JwtMiddleware)
 
 	route.POST("/cart", cartItemController.AddCartItem)
+
+	route.GET("/cart", cartItemController.GetCartItems)
+
+	route.PATCH("/cart/:productId", cartItemController.UpdateCartItem)
 }
 
 //func LocalHostRoute(route *gin.Engine) {
