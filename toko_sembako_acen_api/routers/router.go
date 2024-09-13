@@ -27,6 +27,7 @@ func SetupRoute() *gin.Engine {
 	CategoryRoutes(router)
 	ProductRoutes(router)
 	CartRoutes(router)
+	OrderRoutes(router)
 
 	return router
 }

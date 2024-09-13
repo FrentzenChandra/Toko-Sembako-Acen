@@ -8,7 +8,15 @@ import (
 // Migrate Add list of model add for migrations
 // TODO later separate migration each models
 func Migrate() {
-	var migrationModels = []interface{}{&models.Users{},&models.CartItem{}, &models.Product{}, &models.ProductCategory{}, &models.Category{}}
+	var migrationModels = []interface{}{
+		&models.Users{},
+		&models.CartItem{},
+		&models.Product{},
+		&models.ProductCategory{},
+		&models.Category{},
+		&models.Order{},
+		&models.OrderItem{},
+	}
 	err := database.DB.AutoMigrate(migrationModels...)
 	if err != nil {
 		return

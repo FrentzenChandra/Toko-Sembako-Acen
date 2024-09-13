@@ -77,6 +77,17 @@ func CartRoutes(route *gin.Engine) {
 	route.PATCH("/cart/:productId", cartItemController.UpdateCartItem)
 }
 
+func OrderRoutes(route *gin.Engine) {
+	orderService := services.NewOrderService(DB)
+	orderController := controllers.NewOrderController(orderService)
+
+	route.Use(middlewares.JwtMiddleware)
+
+	route.POST("/order", orderController.CreateOrderItems)
+
+	route.GET("/order/:orderId", orderController.GetOrderItemsById)
+}
+
 //func LocalHostRoute(route *gin.Engine) {
 // 	userControllers := controllers.NewUserController(DB)
 

@@ -22,7 +22,7 @@ func DbConnection(masterDSN, replicaDSN string) error {
 	debug := viper.GetBool("DEBUG")
 
 	db, err = gorm.Open(postgres.Open(masterDSN), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Info),
+		Logger: logger.Default.LogMode(logger.Silent),
 	})
 	if !debug {
 		db.Use(dbresolver.Register(dbresolver.Config{
