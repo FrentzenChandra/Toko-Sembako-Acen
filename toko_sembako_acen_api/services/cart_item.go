@@ -51,6 +51,10 @@ func (c *CartItemService) AddCartItem(input *models.CartItemInput, userId uuid.U
 		return err
 	}
 
+	if input.Price < product.Capital {
+		return errors.New("Price Is invalid ")
+	}
+
 	if input.Price == 0 {
 		input.Price = product.Price
 	}

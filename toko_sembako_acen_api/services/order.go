@@ -1,9 +1,11 @@
 package services
 
 import (
+	"errors"
 	"log"
 	"toko_sembako_acen/models"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -37,34 +39,39 @@ func (o *OrderService) GetOrderItemById(orderId string) ([]*models.OrderItem, er
 	return orderItem, nil
 }
 
-func (o *OrderService) CreateOrderItems(userId string) ([]*models.OrderItem, error) {
-	var order *models.Order
-	var orderItem *models.OrderItem
-	var orderItems []*models.OrderItem
+func (o *OrderService) CreateOrderItems(userId string) (*[]models.OrderItem, error) {
+	var order models.Order
+	var orderItem models.OrderItem
+	var orderItems []models.OrderItem
 	var totalNetIncome, totalPrice float64
 
-	var cartItems []*models.CartItem
+	var cartItems []models.CartItem
 
-	log.Println(555555)
 	if err := o.db.Where("user_id = ?", userId).Preload("User").Preload("Product").Find(&cartItems).Error; err != nil {
 		log.Println("Service Error When getting Cart Items : " + err.Error())
 		return nil, err
 	}
 
 	tx := o.db.Begin()
-	log.Println(cartItems[0].UserID)
-	order.UserID = cartItems[0].UserID
-	log.Println("kenapa error")
+
+	order.UserID = uuid.MustParse(userId)
 
 	if err := tx.Create(&order).Error; err != nil {
 		log.Println("Service Error Creating Order : " + err.Error())
-		tx.Rollback()
 		return nil, err
 	}
-	log.Println(22222222)
 
 	for _, cartItem := range cartItems {
-		hasilSubnet := (cartItem.Product.Capital * float64(cartItem.Qty)) - cartItem.SubTotal
+
+		if cartItem.Qty > cartItem.Product.Stock {
+			return nil, errors.New("Stock is Not Enough")
+		}
+
+		if cartItem.Price < cartItem.Product.Capital {
+			return nil, errors.New("Price Is invalid ")
+		}
+
+		hasilSubnet := cartItem.SubTotal - (cartItem.Product.Capital * float64(cartItem.Qty))
 
 		orderItem.AdminName = cartItem.User.Username
 		orderItem.ProductID = cartItem.ProductID
@@ -75,8 +82,6 @@ func (o *OrderService) CreateOrderItems(userId string) ([]*models.OrderItem, err
 		orderItem.Qty = cartItem.Qty
 		orderItem.Price = cartItem.Price
 
-		log.Println(orderItem)
-
 		if err := tx.Create(&orderItem).Error; err != nil {
 			log.Println("Error creating order Item : " + err.Error())
 			tx.Rollback()
@@ -84,6 +89,7 @@ func (o *OrderService) CreateOrderItems(userId string) ([]*models.OrderItem, err
 		}
 
 		orderItems = append(orderItems, orderItem)
+		orderItem.Id = uuid.Nil
 
 		totalNetIncome += hasilSubnet
 		totalPrice += cartItem.SubTotal
@@ -93,6 +99,15 @@ func (o *OrderService) CreateOrderItems(userId string) ([]*models.OrderItem, err
 			tx.Rollback()
 			return nil, err
 		}
+
+		if err := tx.Where("id = ? ", cartItem.Product.Id).
+			Model(&models.Product{}).
+			Update("stock", cartItem.Product.Stock-orderItem.Qty).
+			Error; err != nil {
+			log.Println("Error When Updating Product Stock : " + err.Error())
+			return nil, err
+		}
+
 	}
 
 	tx.Commit()
@@ -105,5 +120,5 @@ func (o *OrderService) CreateOrderItems(userId string) ([]*models.OrderItem, err
 		return nil, err
 	}
 
-	return orderItems, nil
+	return &orderItems, nil
 }

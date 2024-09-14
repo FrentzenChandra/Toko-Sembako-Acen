@@ -11,7 +11,7 @@ type Order struct {
 	UserID         uuid.UUID `json:"user_id" gorm:"type:uuid;not null;"`
 	TotalNetIncome *float64  `json:"total_net_income" gorm:"type:float8"`
 	TotalPrice     *float64  `json:"total_price" gorm:"type:float8"`
-	CreatedAt      time.Time `json:"created_at,omitempty"`
+	CreatedAt      *time.Time `json:"created_at,omitempty"`
 	User           *Users    `json:"user,omitempty" gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE;"`
 }
 
