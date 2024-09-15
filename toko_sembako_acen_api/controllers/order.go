@@ -16,10 +16,23 @@ func NewOrderController(orderService *services.OrderService) *OrderController {
 	return &OrderController{orderService: orderService}
 }
 
+func (o *OrderController) GetOrders(c *gin.Context) {
+	orderBy := c.Query("orderBy")
+
+	orders, err := o.orderService.GetOrders(orderBy)
+
+	if err != nil {
+		c.JSON(400, gin.H{"status": 400, "message": err.Error(), "data": nil})
+		return
+	}
+
+	c.JSON(200, gin.H{"status": 200, "message": "Orders retrieved successfully", "data": orders})
+}
+
 func (o *OrderController) CreateOrderItems(c *gin.Context) {
 
 	tokenString := c.GetHeader("Authorization")
-	jwtToken, err := helpers.GetToken(tokenString)
+	jwtToken, err := helpers.GetTokenFromHeader(tokenString)
 
 	if err != nil {
 		c.JSON(401, gin.H{"status": 401, "message": err.Error(), "data": nil})
@@ -50,7 +63,7 @@ func (o *OrderController) GetOrderItemsById(c *gin.Context) {
 
 	orderId := c.Param("orderId")
 
-	orderItems, err := o.orderService.GetOrderItemById(orderId)
+	orderItems, err := o.orderService.GetOrderItemsById(orderId)
 
 	if err != nil {
 		c.JSON(400, gin.H{"status": 400, "message": err.Error(), "data": nil})

@@ -7,16 +7,28 @@ import (
 )
 
 type Order struct {
-	Id             uuid.UUID `json:"id" gorm:"type:uuid;not null ; default:gen_random_uuid()"`
-	UserID         uuid.UUID `json:"user_id" gorm:"type:uuid;not null;"`
-	TotalNetIncome *float64  `json:"total_net_income" gorm:"type:float8"`
-	TotalPrice     *float64  `json:"total_price" gorm:"type:float8"`
+	Id             uuid.UUID  `json:"id" gorm:"type:uuid;not null ; default:gen_random_uuid()"`
+	UserID         uuid.UUID  `json:"user_id" gorm:"type:uuid;not null;"`
+	TotalNetIncome *float64   `json:"total_net_income" gorm:"type:float8"`
+	TotalPrice     *float64   `json:"total_price" gorm:"type:float8"`
 	CreatedAt      *time.Time `json:"created_at,omitempty"`
-	User           *Users    `json:"user,omitempty" gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE;"`
+	User           *Users     `json:"user,omitempty" gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE;"`
 }
 
 func (c *Order) TableName() string {
 	return "order"
+}
+
+type OrdersRequest struct {
+	Id             uuid.UUID  `json:"id" `
+	UserID         uuid.UUID  `json:"user_id"  gorm:"type:uuid;not null;"`
+	ProductID      uuid.UUID  `json:"product_id"  gorm:"type:uuid;not null;"`
+	TotalNetIncome *float64   `json:"total_net_income" `
+	TotalPrice     *float64   `json:"total_price" `
+	CreatedAt      *time.Time `json:"created_at,omitempty"`
+	ItemsCount     *int64     `json:"items_count"`
+	User           Users      `json:"user,omitempty" gorm:"foreignKey:UserID;"`
+	Product        Product    `json:"product,omitempty" gorm:"foreignKey:ProductID;"`
 }
 
 type OrderItem struct {

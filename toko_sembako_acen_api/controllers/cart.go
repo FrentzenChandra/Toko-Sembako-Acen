@@ -21,7 +21,7 @@ func NewCartController(cartService *services.CartItemService) *CartController {
 func (c *CartController) GetCartItems(ctx *gin.Context) {
 
 	tokenString := ctx.GetHeader("Authorization")
-	jwtToken, err := helpers.GetToken(tokenString)
+	jwtToken, err := helpers.GetTokenFromHeader(tokenString)
 
 	if err != nil {
 		ctx.JSON(401, gin.H{"status": 401, "message": err.Error(), "data": nil})
@@ -57,7 +57,7 @@ func (c *CartController) AddCartItem(ctx *gin.Context) {
 	}
 
 	tokenString := ctx.GetHeader("Authorization")
-	jwtToken, err := helpers.GetToken(tokenString)
+	jwtToken, err := helpers.GetTokenFromHeader(tokenString)
 
 	if err != nil {
 		ctx.JSON(401, gin.H{"status": 401, "message": err.Error(), "data": nil})
@@ -98,7 +98,7 @@ func (c *CartController) UpdateCartItem(ctx *gin.Context) {
 	productId := ctx.Param("productId")
 
 	tokenString := ctx.GetHeader("Authorization")
-	jwtToken, err := helpers.GetToken(tokenString)
+	jwtToken, err := helpers.GetTokenFromHeader(tokenString)
 
 	if err != nil {
 		ctx.JSON(401, gin.H{"status": 401, "message": err.Error(), "data": nil})

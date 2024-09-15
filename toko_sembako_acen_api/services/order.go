@@ -17,19 +17,49 @@ func NewOrderService(db *gorm.DB) *OrderService {
 	return &OrderService{db: db}
 }
 
-func (o *OrderService) GetOrders() ([]*models.Order, error) {
-	var orders []*models.Order
+func (o *OrderService) GetOrders(orderBy string) (*[]models.OrdersRequest, error) {
+	var orders []models.OrdersRequest
 
-	if err := o.db.Select("Distinct").Find(&orders).Error; err != nil {
-		log.Println("Error Get order By id : " + err.Error())
+	err := o.db.Raw("SELECT o.id , o.user_id , o.total_net_income , o.total_price , (SELECT oi2.product_id FROM order_item oi2 WHERE oi2.order_id = o.id limit 1) , o.created_at, COUNT(oi.id) items_count FROM \"order\" o INNER JOIN order_item oi ON o.id  = oi.order_id GROUP BY o.id ORDER BY o.created_at " + orderBy).
+		Scan(&orders).
+		Error
+
+	for index, OrdersRequest := range orders {
+
+		var productData models.Product
+		var userData models.Users
+
+		if err := o.db.Where("id = ? ", OrdersRequest.ProductID).First(&productData).Error; err != nil {
+			log.Println("Error service find Product : " + err.Error())
+			return nil, err
+		}
+
+		if err := o.db.Where("id = ? ", OrdersRequest.UserID).First(&userData).Error; err != nil {
+			log.Println("Error service find User : " + err.Error())
+			return nil, err
+		}
+
+		orders[index].Product = productData
+		orders[index].User = userData
+
+	}
+
+	if err != nil {
+		log.Println("Error Service Order Find Order : " + err.Error())
 		return nil, err
 	}
 
-	return orders, nil
+	return &orders, nil
 }
 
-func (o *OrderService) GetOrderItemById(orderId string) ([]*models.OrderItem, error) {
+func (o *OrderService) GetOrderItemsById(orderId string) ([]*models.OrderItem, error) {
 	var orderItem []*models.OrderItem
+
+	rowAffected := o.db.Where("order_id = ?", orderId).Find(&orderItem).RowsAffected
+
+	if rowAffected == 0 {
+		return nil, errors.New("Order Data not found")
+	}
 
 	if err := o.db.Preload("Product").Preload("User").Where("order_id = ?", orderId).Find(&orderItem).Error; err != nil {
 		log.Println("Error Get order By id : " + err.Error())

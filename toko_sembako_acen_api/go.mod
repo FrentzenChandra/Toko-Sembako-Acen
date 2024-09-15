@@ -39,6 +39,7 @@ require (
 	github.com/lib/pq v1.10.9 // indirect
 	github.com/markbates/goth v1.80.0 // indirect
 	github.com/mattn/go-sqlite3 v1.14.22 // indirect
+	github.com/mowshon/dot v1.0.1 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pressly/goose v2.7.0+incompatible // indirect
 	github.com/sagikazarmark/locafero v0.6.0 // indirect

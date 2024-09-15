@@ -34,9 +34,11 @@ func UserRoutes(route *gin.Engine) {
 
 	route.POST("/users/signup", userControllers.Register)
 	route.POST("/users/signin", userControllers.Login)
+	route.POST("/users/accesstoken", userControllers.CreateNewAccesstoken)
 
 	route.Use(middlewares.JwtMiddleware)
 	route.GET("/users", userControllers.GetUsers)
+
 }
 
 func ProductRoutes(route *gin.Engine) {
@@ -86,6 +88,7 @@ func OrderRoutes(route *gin.Engine) {
 	route.POST("/order", orderController.CreateOrderItems)
 
 	route.GET("/order/:orderId", orderController.GetOrderItemsById)
+	route.GET("/order", orderController.GetOrders)
 }
 
 //func LocalHostRoute(route *gin.Engine) {

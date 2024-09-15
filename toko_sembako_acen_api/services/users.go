@@ -47,28 +47,28 @@ func (u *UserService) SignUp(user *models.Users) (*uuid.UUID, error) {
 	return &user.Id, nil
 }
 
-func (u *UserService) Login(user *models.Users) (*string, error) {
+func (u *UserService) Login(user *models.Users) (*string, *string, error) {
 
 	inputPassword := user.Password
 
 	if err := u.db.Where("email = ? AND deleted_at IS NULL", user.Email).First(&user).Error; err != nil {
 		log.Println("Repostiory Error Get user Detail : " + err.Error())
-		return nil, err
+		return nil, nil, err
 	}
 
 	isPasswordCorrect := helpers.VerifyPassword(user.Password, inputPassword)
 
 	if !isPasswordCorrect {
-		return nil, errors.New("Email Or Password Is Invalid ")
+		return nil, nil, errors.New("Email Or Password Is Invalid ")
 	}
 
-	tokenString, err := helpers.CreateToken(user.Id, user.Username, user.Email)
+	refreshTokenString, AccesstokenString, err := helpers.CreateToken(user.Id, user.Username, user.Email)
 
 	if err != nil {
-		return nil, errors.New("failed To create Token : " + err.Error())
+		return nil, nil, errors.New("failed To create Token : " + err.Error())
 	}
 
-	return &tokenString, nil
+	return &refreshTokenString, &AccesstokenString, nil
 }
 
 func (u *UserService) UserList() (*[]models.Users, error) {
